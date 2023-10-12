@@ -23,7 +23,7 @@ export default function IPhoneCalculator(): React.JSX.Element {
   const calculateResult = () => {
     const { display, prevValue, operator } = state;
     const currentValue = parseFloat(display);
-    let result = prevValue ?? 0;
+    let result = prevValue as number;
     switch (operator) {
       case "+":
         result += currentValue;
@@ -37,16 +37,14 @@ export default function IPhoneCalculator(): React.JSX.Element {
       case "/":
         result /= currentValue;
         break;
-      case "%":
-        result %= currentValue;
-        break;
       default:
         break;
     }
     partialStateUpdate({
       display: result.toString(),
-      prevValue: null,
-      operator: null,
+      waitingForOperand: false,
+      prevValue: result,
+      // operator,
     });
   };
 
@@ -78,6 +76,7 @@ export default function IPhoneCalculator(): React.JSX.Element {
 
   const handleEqualsClick = (): void => {
     calculateResult();
+    partialStateUpdate({waitingForOperand: true})
   };
 
   const handleClearClick = () => {
@@ -107,6 +106,13 @@ export default function IPhoneCalculator(): React.JSX.Element {
     }
   };
 
+  const handlePercentageClick = () => {
+    const { display } = state;
+    const value = parseFloat(display);
+    const percentageValue = value / 100;
+    partialStateUpdate({ display: percentageValue.toString() });
+  };
+
   return (
     <div className="calculator">
       <div className="calculator-display">{state.display}</div>
@@ -118,10 +124,7 @@ export default function IPhoneCalculator(): React.JSX.Element {
           <button onClick={handleNegateClick} className="bg-lightgray">
             +/-
           </button>
-          <button
-            onClick={() => handleOperatorClick("%")}
-            className="bg-lightgray"
-          >
+          <button onClick={handlePercentageClick} className="bg-lightgray">
             %
           </button>
           <button
